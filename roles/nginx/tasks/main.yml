@@ -1,0 +1,52 @@
+# roles/nginx/tasks/main.yml
+
+---
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Start and enable nginx
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Configure nginx
+  template:
+    src: default.conf.j2
+    dest: /etc/nginx/sites-available/default
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart nginx
+
+- name: Create nginx log directory
+  file:
+    path: /var/log/nginx
+    state: directory
+    mode: '0755'
+
+- name: Ensure /var/www/html directory exists
+  file:
+    path: /var/www/html
+    state: directory
+    mode: '0755'
+
+- name: Create a default index.html file if not present
+  copy:
+    dest: /var/www/html/index.html
+    content: |
+      <html>
+      <head><title>Welcome to Nginx!</title></head>
+      <body><h1>Welcome to Nginx!</h1></body>
+      </html>
+    mode: '0644'
+    force: no
+
+- name: Set correct permissions for /var/www/html
+  file:
+    path: /var/www/html
+    state: directory
+    recurse: yes
+    mode: '0755'

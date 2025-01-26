@@ -1,0 +1,15 @@
+# roles/app/tasks/main.yml) 
+
+---
+- name: Create web directory
+  file:
+    path: /var/www/html
+    state: directory
+    mode: '0755'
+
+- name: Upload and extract website content
+  unarchive:
+    src: "{{ website_archive }}"
+    dest: /var/www/html/
+    remote_src: no
+  when: website_tarball is defined

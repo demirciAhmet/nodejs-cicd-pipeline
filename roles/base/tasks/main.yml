@@ -1,0 +1,72 @@
+# roles/base/tasks/main.yml
+
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade all packages
+  apt:
+    upgrade: dist
+
+- name: Install essential packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - fail2ban
+      - ufw
+      - curl
+      - wget
+      - vim
+      - htop
+      - git
+      - unzip
+      - rsync
+      - nodejs
+      - npm
+
+- name: Configure fail2ban
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+
+- name: Configure UFW
+  ufw:
+    state: enabled
+    policy: deny
+    rule: allow
+    port: "{{ item }}"
+  loop:
+    - '22'
+    - '80'
+    - '443'
+    - '3000'
+
+- name: Create app directory
+  file:
+    path: /opt/nodejs-app
+    state: directory
+    mode: '0755'
+
+- name: Copy application files
+  copy:
+    src: "{{ item }}"
+    dest: /opt/nodejs-app/
+  with_items:
+    - app.js
+    - package.json
+
+- name: Install dependencies
+  npm:
+    path: /opt/nodejs-app
+    state: present
+
+- name: Setup systemd service
+  template:
+    src: nodejs.service.j2
+    dest: /etc/systemd/system/nodejs.service
+  notify: restart nodejs

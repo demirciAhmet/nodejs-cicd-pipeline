@@ -1,0 +1,15 @@
+# roles/ssh/tasks/main.yml
+
+---
+- name: Ensure .ssh directory exists
+  file:
+    path: "{{ ansible_user_dir }}/.ssh"
+    state: directory
+    mode: '0700'
+
+- name: Add SSH public key
+  authorized_key:
+    user: "{{ ansible_user }}"
+    key: "{{ ssh_public_key }}"
+    state: present
+  when: ssh_public_key is defined
