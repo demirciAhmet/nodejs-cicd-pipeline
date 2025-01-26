@@ -1,0 +1,76 @@
+# .github/workflows/deploy.yml
+name: Deploy Node.js Application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Node.js setup (if you have a Node.js application)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Terraform setup and deployment
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.0'
+
+      - name: Configure SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/digitalocean_new
+          chmod 600 ~/.ssh/digitalocean_new
+          ssh-keygen -y -f ~/.ssh/digitalocean_new > ~/.ssh/digitalocean_new.pub
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        env:
+          DO_TOKEN: ${{ secrets.DO_TOKEN }}
+        run: |
+          terraform init
+
+      - name: Terraform Plan
+        working-directory: ./terraform
+        env:
+          DO_TOKEN: ${{ secrets.DO_TOKEN }}
+        run: |
+          terraform plan -var="do_token=${DO_TOKEN}"
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ./terraform
+        env:
+          DO_TOKEN: ${{ secrets.DO_TOKEN }}
+        run: |
+          terraform apply -auto-approve -var="do_token=${DO_TOKEN}"
+
+      - name: Create Ansible inventory
+        working-directory: ./terraform
+        run: |
+          echo "[terraform]" > ../ansible/inventory
+          echo "$(terraform output -raw droplet_ip) ansible_user=root ansible_ssh_private_key_file=~/.ssh/digitalocean_new ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> ../ansible/inventory
+
+      - name: Run Ansible playbook
+        working-directory: ./ansible
+        run: |
+          ansible-playbook -i inventory setup.ini
+
+      # Optional: Add deployment verification
+      - name: Verify deployment
+        working-directory: ./terraform
+        run: |
+          echo "Deployment completed to $(terraform output -raw droplet_ip)"
