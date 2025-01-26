@@ -34,4 +34,4 @@ jobs:
 
     - name: Run Ansible playbook
       run: |
-        ansible-playbook -i "${{ secrets.SERVER_IP }}," playbook.yml -u root
+        ansible-playbook -i "${{ secrets.SERVER_IP }}," playbook.yml -u root -vvv

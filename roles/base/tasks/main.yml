@@ -1,6 +1,3 @@
-# roles/base/tasks/main.yml
-
----
 - name: Update apt cache
   apt:
     update_cache: yes
@@ -27,24 +24,45 @@
       - rsync
       - nodejs
       - npm
+  async: 600
+  poll: 0
+  register: install_packages
+
+- name: Wait for essential packages to be installed
+  async_status:
+    jid: "{{ install_packages.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 10
+  delay: 30
+
+- name: Allow SSH before enabling UFW
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: Configure UFW rules
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+  loop:
+    - '80'
+    - '443'
+    - '3000'
 
 - name: Configure fail2ban
   service:
     name: fail2ban
     state: started
     enabled: yes
-
-- name: Configure UFW
-  ufw:
-    state: enabled
-    policy: deny
-    rule: allow
-    port: "{{ item }}"
-  loop:
-    - '22'
-    - '80'
-    - '443'
-    - '3000'
+  notify:
+    - restart fail2ban
 
 - name: Create app directory
   file:
@@ -69,4 +87,16 @@
   template:
     src: nodejs.service.j2
     dest: /etc/systemd/system/nodejs.service
-  notify: restart nodejs
+  notify:
+    - restart nodejs
+
+handlers:
+  - name: restart fail2ban
+    service:
+      name: fail2ban
+      state: restarted
+
+  - name: restart nodejs
+    service:
+      name: nodejs
+      state: restarted
