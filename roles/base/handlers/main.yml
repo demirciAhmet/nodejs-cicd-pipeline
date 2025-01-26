@@ -5,3 +5,8 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
+
+- name: restart fail2ban
+  service:
+    name: fail2ban
+    state: restarted
