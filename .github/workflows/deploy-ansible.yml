@@ -16,6 +16,11 @@ jobs:
       with:
         python-version: '3.x'
 
+    - name: Debug Secrets (DO NOT USE IN PRODUCTION)
+      run: |
+        echo "SERVER_IP: ${{ secrets.SERVER_IP }}"
+        echo "SSH_PRIVATE_KEY length: ${#SSH_PRIVATE_KEY}"
+        
     - name: Install Ansible
       run: |
         python -m pip install --upgrade pip
