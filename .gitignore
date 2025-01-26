@@ -1,0 +1,22 @@
+# Node.js dependencies
+node_modules/
+
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Ansible temporary files
+*.retry
+
+# SSH keys
+*.pem
+*.key
+deploy_key
+
+# Logs
+*.log
+
+# System files
+.DS_Store
