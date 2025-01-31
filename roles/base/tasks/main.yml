@@ -78,10 +78,10 @@
     - app.js
     - package.json
 
-- name: Install dependencies
-  npm:
-    path: /opt/nodejs-app
-    state: present
+- name: Install Node.js dependencies
+  command: npm install
+  args:
+    chdir: /var/www/node-service/
 
 - name: Setup systemd service
   template:

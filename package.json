@@ -1,11 +1,22 @@
 {
-    "name": "nodejs-cicd",
-    "version": "1.0.0",
-    "main": "app.js",
-    "scripts": {
-        "start": "node app.js"
-    },
-    "dependencies": {
-        "express": "^4.18.2"
-    }
+  "name": "nodejs-cicd-pipeline",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/demirciAhmet/nodejs-cicd-pipeline.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/demirciAhmet/nodejs-cicd-pipeline/issues"
+  },
+  "homepage": "https://github.com/demirciAhmet/nodejs-cicd-pipeline#readme"
 }
